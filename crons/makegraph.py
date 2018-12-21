@@ -1,5 +1,6 @@
 import sys
 import json
+import boto3
 from datetime import datetime
 from collections import defaultdict
 
@@ -25,9 +26,7 @@ class GameNode:
 
 
 now = datetime.now()
-print("starting query")
-sys.stdout.flush()
-all_games_data = Boxscores(datetime(now.year, 12, 1), now)
+all_games_data = Boxscores(datetime(now.year, 12, 15), now)
 data = all_games_data.games
 
 graph = defaultdict(list)
@@ -46,16 +45,12 @@ for date in data.keys():
 dict_to_write = {"updated":datetime.now().strftime("%x at %I:%M %p"), "graph":graph}
 json_to_write = json.dumps(dict_to_write)
 
-with open("data/current_season_graph.json", 'w') as f:
-    f.seek(0)
-    f.truncate()
+open('current_season.json', 'w').write(json_to_write)
 
-    f.write(json_to_write)
+s3_client = boto3.client('s3',
+                      aws_access_key_id=os.environ['aws_access_key_id'],
+                      aws_secret_access_key=os.environ['aws_secret_access_key'],
+                      region_name=os.environ['region']
+                      )
 
-print("Results from read:")
-with open('data/current_season_graph.json', 'r') as f:
-    graph_json = f.read()
-    print(graph_json)
-
-print("done 3")
-sys.stdout.flush()
+s3_client.upload_file('current_season.json', 'graphs-cbbchaingame', 'current_season_graph.json')

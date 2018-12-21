@@ -31,13 +31,15 @@ def get_wins():
     request_params = request.values
     team = request_params['team']
 
-    data = {}
-    try:
-        with open('data/current_season_graph.json', 'r') as f:
-            graph_json = f.read()
-            data = json.loads(graph_json)
-    except OSError as e:
-        print(e)
+    s3_client = boto3.client('s3',
+                          aws_access_key_id=os.environ['aws_access_key_id'],
+                          aws_secret_access_key=os.environ['aws_secret_access_key'],
+                          region_name=os.environ['region']
+                          )
+
+    s3_client.download_file('graphs-cbbchaingame', 'current_season_graph.json', 'current_season.json')
+
+    data = json.loads(open('current_season.json').read())
 
     response = {"updated": data["updated"], "wins" : data["graph"][team]}
     return json.dumps(response)
