@@ -24,6 +24,7 @@ class GameNode:
 
 
 now = datetime.now()
+print("starting query")
 all_games_data = Boxscores(datetime(now.year, 12, 1), now)
 data = all_games_data.games
 
@@ -40,11 +41,13 @@ for date in data.keys():
             game_record = GameNode(game, date)
             graph[winner].append(game_record.__dict__)
 
+print("done 1")
 dict_to_write = {"updated":datetime.now().strftime("%x at %I:%M %p"), "graph":graph}
 json_to_write = json.dumps(dict_to_write)
-
+print("done 2")
 with open("data/current_season_graph.json", 'w') as f:
     f.seek(0)
     f.truncate()
 
     f.write(json_to_write)
+print("done 3")
