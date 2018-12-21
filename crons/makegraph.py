@@ -43,17 +43,19 @@ for date in data.keys():
             game_record = GameNode(game, date)
             graph[winner].append(game_record.__dict__)
 
-print("done 1")
-sys.stdout.flush()
 dict_to_write = {"updated":datetime.now().strftime("%x at %I:%M %p"), "graph":graph}
 json_to_write = json.dumps(dict_to_write)
-print("done 2")
-print(json_to_write)
-sys.stdout.flush()
+
 with open("data/current_season_graph.json", 'w') as f:
     f.seek(0)
     f.truncate()
 
     f.write(json_to_write)
+
+print("Results from read:")
+with open('data/current_season_graph.json', 'r') as f:
+    graph_json = f.read()
+    print(graph_json)
+
 print("done 3")
 sys.stdout.flush()
