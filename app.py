@@ -1,4 +1,5 @@
-from flask import Flask, jsonify
+import json
+from flask import Flask, jsonify, request
 from datetime import datetime
 from collections import defaultdict
 
@@ -24,33 +25,23 @@ class GameNode:
    def __str__(self):
      print("beat %s by %d @ %s" % opponent, winner_score - loser_score, home_team)
 
-@app.route('/chains', methods=['GET'])
-def get_chains():
-    # team_one = request.json['team_one']
-    # team_two = request.json['team_two']
-    # start_date = request.json['start_date']
-    # end_date = request.json['end_date']
 
-    team_one = "duke"
-    team_two = "purdue"
-    start_date = "2018-10-15"
-    end_date = "2018-12-15"
+@app.route('/wins', methods=['GET'])
+def get_wins():
+    request_params = request.values
+    team = request_params['team']
 
-    all_games_data = Boxscores(datetime(2018, 10, 30), datetime(2018, 11, 20))
-    data = all_games_data.games
+    data = {}
+    try:
+        with open('data/current_season_graph.json', 'r') as f:
+            graph_json = f.read()
+            data = json.loads(graph_json)
+    except OSError as e:
+        print(e)
 
-    graph = defaultdict(list)
+    response = {"updated": data["updated"], "wins" : data["graph"][team]}
+    return json.dumps(response)
 
-    for date in data.keys():
-        games = data[date]
-
-        for game in games:
-            winner = game["winning_name"]
-
-            game_record = GameNode(game, date)
-            graph[winner].append(game_record.__dict__)
-
-    return jsonify(graph)
 
 if __name__ == '__main__':
     app.run(debug=True)
