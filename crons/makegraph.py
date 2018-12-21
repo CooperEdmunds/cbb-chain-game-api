@@ -48,6 +48,7 @@ sys.stdout.flush()
 dict_to_write = {"updated":datetime.now().strftime("%x at %I:%M %p"), "graph":graph}
 json_to_write = json.dumps(dict_to_write)
 print("done 2")
+print(json_to_write)
 sys.stdout.flush()
 with open("data/current_season_graph.json", 'w') as f:
     f.seek(0)
