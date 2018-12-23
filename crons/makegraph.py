@@ -26,7 +26,7 @@ last_updated = datetime(datetime.utcnow().year, 8, 15)
 current_graph = {}
 try:
   # Get the graph stored in S3 and write it to a local file
-  s3_client.download_file("graphs-cbbchaingame", 'current_season_graph.json', 'current_graph.json')
+  s3_client.download_file(os.environ['bucket'], 'current_season_graph.json', 'current_graph.json')
   data = json.loads(open('current_graph.json').read())
   os.remove('current_graph.json')
 
@@ -68,6 +68,6 @@ json_to_write = json.dumps(dict_to_write)
 open('new_graph.json', 'w').write(json_to_write)
 
 # Upload the json file to S3
-s3_client.upload_file('new_graph.json', "graphs-cbbchaingame", 'current_season_graph.json')
+s3_client.upload_file('new_graph.json', os.environ['bucket'], 'current_season_graph.json')
 
 os.remove('new_graph.json')
