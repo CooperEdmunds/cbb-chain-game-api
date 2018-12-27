@@ -9,10 +9,18 @@ from collections import defaultdict
 from sportsreference.ncaab.boxscore import Boxscores
 
 class GameNode:
-   def __init__(self, game):
-      self.team = game["winning_name"]
-      self.opponent = game["losing_name"]
-      self.differential = abs(game["home_score"] - game["away_score"])
+   def __init__(self, game, date):
+      self.w = game["winning_name"]
+      self.l = game["losing_name"]
+
+      if(game["winning_name"] == game["home_name"]):
+          self.w_s = game["home_score"]
+          self.l_s = game["away_score"]
+      else:
+          self.w_s = game["away_score"]
+          self.l_s = game["home_score"]
+
+      self.d = date
 
 
 # Instantiate S3 client
@@ -22,11 +30,12 @@ s3_client = boto3.client('s3',
                       region_name=os.environ['region']
                       )
 
-last_updated = datetime(datetime.utcnow().year, 8, 15)
+last_updated = datetime(datetime.utcnow().year, 9, 15)
 current_graph = {}
+
 try:
   # Get the graph stored in S3 and write it to a local file
-  s3_client.download_file(os.environ['bucket'], 'current_season_graph.json', 'current_graph.json')
+  s3_client.download_file("graphs-cbbchaingame", 'current_season_graph.json', 'current_graph.json')
   data = json.loads(open('current_graph.json').read())
   os.remove('current_graph.json')
 
@@ -57,7 +66,7 @@ for date in data.keys():
 
         # Only add D1 games
         if(game["non_di"] != True and game['winning_name'] != None):
-            game_record = GameNode(game)
+            game_record = GameNode(game, date)
             # If this game isn't already in the graph, add it
             if(game_record.__dict__ not in new_graph[winner]):
                 new_graph[winner].append(game_record.__dict__)
@@ -68,6 +77,6 @@ json_to_write = json.dumps(dict_to_write)
 open('new_graph.json', 'w').write(json_to_write)
 
 # Upload the json file to S3
-s3_client.upload_file('new_graph.json', os.environ['bucket'], 'current_season_graph.json')
+s3_client.upload_file('new_graph.json', "graphs-cbbchaingame", 'current_season_graph.json')
 
 os.remove('new_graph.json')
