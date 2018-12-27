@@ -50,43 +50,83 @@ def get_chains():
     request_params = request.values
     teamA = request_params['teamA']
     teamB = request_params['teamB']
-    excluded_teams = json.loads(request_params['excluded_teams'])
+    excluded_teams = json.loads(request_params['excludedTeams'])
 
     # Get graph from S3
     s3_client.download_file(os.environ['bucket'], 'current_season_graph.json', 'current_season.json')
     graph = json.loads(open('current_season.json').read())['graph']
     os.remove('current_season.json')
 
-    def make_chains(teamA, target, exclude, max_num, link_limit):
+    def make_chains(team_a, target, exclude, max_num, link_limit):
         answers = []
         history_queue = Queue()
 
-        history_queue.put([teamA])
+        team_a_wins = graph[team_a]
+        map(history_queue.put, team_a_wins)
 
         while(len(answers) < max_num and history_queue.qsize() > 0):
             history = history_queue.get()
 
             if(len(history) > link_limit): return answers
 
-            last_team = history[len(history) - 1]
+            last_win = history[len(history) - 1]
+            opponent = last_win['l']
 
-            if(last_team == target):
-                answers.append(" -> ".join(history))
+            if(opponent == target):
+                answers.append(history)
                 continue
 
-            if(last_team not in graph):
+            if(opponent not in graph):
                 continue
 
-            wins = graph[last_team]
+            wins = graph[opponent]
 
             for win in wins:
-                opponent = win['opponent']
-                if(opponent not in history and opponent not in exclude):
+                opponent_2 = win['l']
+                if(team_not_in_history(opponent_2, history) and opponent_2 not in exclude):
                     new_history = history[:]
-                    new_history.append(opponent)
+                    new_history.append(win)
                     history_queue.put(new_history)
 
         return answers
+
+        def team_not_in_history(team, history):
+            for win in history:
+                if(win['l'] == team or win['w'] == team):
+                    return True
+            return False
+
+    # def make_chains(teamA, target, exclude, max_num, link_limit):
+    #     answers = []
+    #     history_queue = Queue()
+    #
+    #     history_queue.put([teamA])
+    #
+    #     while(len(answers) < max_num and history_queue.qsize() > 0):
+    #         history = history_queue.get()
+    #
+    #         if(len(history) > link_limit): return answers
+    #
+    #         last_team = history[len(history) - 1]
+    #
+    #         if(last_team == target):
+    #             answers.append(" > ".join(history))
+    #             continue
+    #
+    #         if(last_team not in graph):
+    #             continue
+    #
+    #         wins = graph[last_team]
+    #
+    #         for win in wins:
+    #             opponent = win['opponent']
+    #             if(opponent not in history and opponent not in exclude):
+    #                 new_history = history[:]
+    #                 new_history.append(opponent)
+    #                 history_queue.put(new_history)
+    #
+    #     return answers
+
 
     a_to_b_chains = make_chains(teamA, teamB, excluded_teams, 30, 8)
     b_to_a_chains = make_chains(teamB, teamA, excluded_teams, 30, 8)
