@@ -57,12 +57,19 @@ def get_chains():
     graph = json.loads(open('current_season.json').read())['graph']
     os.remove('current_season.json')
 
+    def team_not_in_history(team, history):
+        for win in history:
+            if(win['l'] == team or win['w'] == team):
+                return False
+        return True
+
     def make_chains(team_a, target, exclude, max_num, link_limit):
         answers = []
         history_queue = Queue()
 
         team_a_wins = graph[team_a]
-        map(history_queue.put, team_a_wins)
+        for win in team_a_wins:
+            history_queue.put([win])
 
         while(len(answers) < max_num and history_queue.qsize() > 0):
             history = history_queue.get()
@@ -89,12 +96,6 @@ def get_chains():
                     history_queue.put(new_history)
 
         return answers
-
-        def team_not_in_history(team, history):
-            for win in history:
-                if(win['l'] == team or win['w'] == team):
-                    return True
-            return False
 
     # def make_chains(teamA, target, exclude, max_num, link_limit):
     #     answers = []
@@ -128,8 +129,8 @@ def get_chains():
     #     return answers
 
 
-    a_to_b_chains = make_chains(teamA, teamB, excluded_teams, 30, 8)
-    b_to_a_chains = make_chains(teamB, teamA, excluded_teams, 30, 8)
+    a_to_b_chains = make_chains(teamA, teamB, excluded_teams, 30, 7)
+    b_to_a_chains = make_chains(teamB, teamA, excluded_teams, 30, 7)
 
     response = {"a_to_b_chains": a_to_b_chains, "b_to_a_chains" : b_to_a_chains}
     return json.dumps(response)
