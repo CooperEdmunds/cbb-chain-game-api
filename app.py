@@ -10,13 +10,6 @@ from sportsreference.ncaab.boxscore import Boxscores
 
 app = Flask(__name__)
 
-class GameNode:
-   def __init__(self, game, date):
-      self.team = game["winning_name"]
-      self.opponent = game["losing_name"]
-      self.differential = abs(game["home_score"] - game["away_score"])
-
-
 @app.route('/wins', methods=['GET'])
 def get_wins():
     # Instantiate S3 client
