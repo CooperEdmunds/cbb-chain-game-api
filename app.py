@@ -66,7 +66,12 @@ def get_chains():
         nodes = []
 
         nodes_dict = {}
-        team_a_wins = graph[team_a]
+
+        team_a_wins = []
+
+        if(team_a in graph):
+            team_a_wins = graph[team_a]
+
         for win in team_a_wins:
             chains_queue.put([win])
 
