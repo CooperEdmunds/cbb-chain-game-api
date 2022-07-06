@@ -11,7 +11,7 @@ idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10
 jmespath==0.9.3
-lxml==4.2.5
+lxml==4.9.1
 MarkupSafe==1.1.0
 numpy==1.15.4
 pandas==0.23.4
